@@ -20,6 +20,7 @@ import Networth from './pages/Networth';
 import Expenses from './pages/Expenses';
 import Budget from './pages/Budget';
 import Investments from './pages/Investments';
+import "./App.css"
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
