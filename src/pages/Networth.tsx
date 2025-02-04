@@ -37,7 +37,7 @@ export default function NetworthPage() {
     { id: '6', name: 'Credit Card', value: 2000, type: 'liability' },
   ]);
 
-  const [newItem, setNewItem] = useState({
+  const [newItem, setNewItem] = useState({ 
     name: '',
     value: '',
     type: 'asset',
@@ -95,7 +95,7 @@ export default function NetworthPage() {
               <h3 className="text-sm font-medium text-gray-500">
                 Total Assets
               </h3>
-              <p className="text-2xl font-bold mt-2">
+              <p className="text-title-md font-bold text-black dark:text-white mt-2">
                 ${totalAssets.toLocaleString()}
               </p>
             </div>
@@ -103,13 +103,13 @@ export default function NetworthPage() {
               <h3 className="text-sm font-medium text-gray-500">
                 Total Liabilities
               </h3>
-              <p className="text-2xl font-bold mt-2">
+              <p className="text-title-md font-bold text-black dark:text-white mt-2">
                 ${totalLiabilities.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Net Worth</h3>
-              <p className="text-2xl font-bold mt-2">
+              <p className="text-title-md font-bold text-black dark:text-white mt-2">
                 ${netWorth.toLocaleString()}
               </p>
             </div>
