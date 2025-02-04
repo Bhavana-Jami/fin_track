@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Bell, MessageCircle, Plus } from 'lucide-react';
+// import { Search, Bell, MessageCircle, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 // import Image from "next/image"
 import {
   LineChart,
