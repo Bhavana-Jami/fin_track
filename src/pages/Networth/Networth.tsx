@@ -14,7 +14,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
+import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 interface FinancialItem {
   id: string;
@@ -27,27 +27,40 @@ interface NetWorthData {
   date: string;
   netWorth: number;
 }
-
+import { useFirebaseFirestore } from '../../hooks/useFirebaseFirestore';
+import { useSelector } from 'react-redux';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseconfig.js';
+// import { updateFirestoreData } from '../../hooks/useFirebaseFirestore/updateFirestoreData';
 export default function NetworthPage() {
-  const [financialItems, setFinancialItems] = useState<FinancialItem[]>([
-    { id: '1', name: 'Cash', value: 10000, type: 'asset' },
-    { id: '2', name: 'Investments', value: 50000, type: 'asset' },
-    { id: '3', name: 'Property', value: 300000, type: 'asset' },
-    { id: '4', name: 'Mortgage', value: 250000, type: 'liability' },
-    { id: '5', name: 'Car Loan', value: 15000, type: 'liability' },
-    { id: '6', name: 'Credit Card', value: 2000, type: 'liability' },
-  ]);
-
-  const [newItem, setNewItem] = useState({ 
+  const currentUser = useSelector((state) => state.authReducer.currentUser);
+  const { networth, addItemToFirestore, loading, error } =
+    useFirebaseFirestore();
+  const [newItem, setNewItem] = useState({
+    id: Date.now(),
     name: '',
     value: '',
     type: 'asset',
+    month: new Date().getMonth()+1,
   });
+  const handleAddItem = () => {
+    if (!newItem.name.trim()) return;
 
-  const assets = financialItems.filter((item) => item.type === 'asset');
-  const liabilities = financialItems.filter(
-    (item) => item.type === 'liability',
-  );
+    addItemToFirestore('networth', newItem);
+    setNewItem({
+      id: Date.now(),
+      name: '',
+      value: '',
+      type: 'asset',
+      month: new Date().getMonth(),
+    });
+  };
+
+  if (loading) return <p>Loading networth data...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const assets = networth.filter((item) => item.type === 'asset');
+  const liabilities = networth.filter((item) => item.type === 'liability');
 
   const totalAssets = assets.reduce((sum, asset) => sum + asset.value, 0);
   const totalLiabilities = liabilities.reduce(
@@ -55,69 +68,59 @@ export default function NetworthPage() {
     0,
   );
   const netWorth = totalAssets - totalLiabilities;
+ // Function to calculate net worth for each month
+const calculateNetWorthForMonth = (month: number, networth: NetWorthItem[]): number => {
+  const netMonth= networth.filter((item) => item.month === month);
+  const netMonthAss = netMonth.filter((item) => item.type === 'asset').reduce((sum, item) => sum + item.value, 0);
+  const netMonthLia = netMonth.filter((item) => item.type === 'liability').reduce((sum, item) => sum + item.value, 0);
+  return netMonthAss - netMonthLia;
+}
 
-  // Mock data for net worth growth
-  const netWorthData: NetWorthData[] = [
-    { date: '2023-01', netWorth: 80000 },
-    { date: '2023-02', netWorth: 82000 },
-    { date: '2023-03', netWorth: 85000 },
-    { date: '2023-04', netWorth: 90000 },
-    { date: '2023-05', netWorth: 88000 },
-    { date: '2023-06', netWorth: 93000 },
-  ];
+// Mock data for net worth growth for each month
+const netWorthData: NetWorthData[] = [
+  { date: '2025-01', netWorth: calculateNetWorthForMonth(1, networth) },
+  { date: '2025-02', netWorth: calculateNetWorthForMonth(2, networth) },
+  { date: '2025-03', netWorth: calculateNetWorthForMonth(3, networth) },
+  { date: '2025-04', netWorth: calculateNetWorthForMonth(4, networth) },
+  { date: '2025-05', netWorth: calculateNetWorthForMonth(5, networth) },
+  { date: '2025-06', netWorth: calculateNetWorthForMonth(6, networth) },
+];
 
-  const handleAddItem = () => {
-    if (newItem.name && newItem.value) {
-      setFinancialItems([
-        ...financialItems,
-        {
-          id: Date.now().toString(),
-          name: newItem.name,
-          value: Number.parseFloat(newItem.value),
-          type: newItem.type,
-        },
-      ]);
-      setNewItem({ name: '', value: '', type: 'asset' });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <Breadcrumb pageName="Networth" />
-
         <div className="grid gap-6">
           {/* Summary Cards */}
           <div className="grid gap-6 md:grid-cols-3">
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <div className="bg-white p-6 shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">
                 Total Assets
               </h3>
               <p className="text-title-md font-bold text-black dark:text-white mt-2">
-                ${totalAssets.toLocaleString()}
+                ₹{totalAssets.toLocaleString()}
               </p>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <div className="bg-white p-6  shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">
                 Total Liabilities
               </h3>
               <p className="text-title-md font-bold text-black dark:text-white mt-2">
-                ${totalLiabilities.toLocaleString()}
+                ₹{totalLiabilities}
               </p>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <div className="bg-white p-6 shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Net Worth</h3>
               <p className="text-title-md font-bold text-black dark:text-white mt-2">
-                ${netWorth.toLocaleString()}
+                ₹{netWorth.toLocaleString()}
               </p>
             </div>
           </div>
 
           {/* Net Worth Growth Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-white p-6  shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Net Worth Growth</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={netWorthData}>
@@ -138,7 +141,7 @@ export default function NetworthPage() {
 
           {/* Assets & Liabilities Details */}
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <div className="bg-white p-6  shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Assets</h3>
               <div className="space-y-4">
                 {assets.map((asset) => (
@@ -154,7 +157,7 @@ export default function NetworthPage() {
                 ))}
               </div>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <div className="bg-white p-6  shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Liabilities</h3>
               <div className="space-y-4">
                 {liabilities.map((liability) => (
@@ -175,7 +178,7 @@ export default function NetworthPage() {
           </div>
 
           {/* Add New Item Form */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-white p-6  shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Add New Item</h3>
             <div className="flex gap-4">
               <input

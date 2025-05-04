@@ -2,26 +2,46 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-01.png';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { LogInIcon } from 'lucide-react';
+import Buttons from '../../pages/UiElements/Buttons';
+import { initiateSignOut,initiateGoogleSignIn } from '../../pages/Authentication/redux/googleAuthActions';
+// import {googleAuthReducer} from "../../pages/Authentication/redux/googleAuthReducer";
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.authReducer.currentUser);
+  const handleGoogleSignOut = () => {
+    console.log('first');
+    try {
+      dispatch(initiateSignOut());
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  return (
+    const handleSignInWithGoogle = () => {
+      // e.preventDefault();
+      try {
+        dispatch(initiateGoogleSignIn());
+      } catch (error) {
+        console.log('some error occurred', error);
+      }
+    };
+
+  return currentUser ? (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <Link
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="flex items-center gap-4"
         to="#"
       >
-        <span className="hidden text-right lg:block">
-          <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
-          </span>
-          <span className="block text-xs">UX Designer</span>
-        </span>
-
-        <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
+        <span className="h-11 w-11 rounded-full">
+          <img
+            src={currentUser?.photoURL}
+            alt="User"
+            className="h-11 w-11 rounded-full"
+          />
         </span>
 
         <svg
@@ -119,7 +139,11 @@ const DropdownUser = () => {
               </Link>
             </li>
           </ul>
-          <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <button
+            type="button"
+            onClick={handleGoogleSignOut}
+            className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+          >
             <svg
               className="fill-current"
               width="22"
@@ -143,6 +167,14 @@ const DropdownUser = () => {
       )}
       {/* <!-- Dropdown End --> */}
     </ClickOutside>
+  ) : (
+    <button
+      type="button"
+      onClick={handleSignInWithGoogle}
+      className="inline-flex items-center justify-center gap-2.5 rounded-full bg-primary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+    >
+      Sign In <LogInIcon size={16} />
+    </button>
   );
 };
 
