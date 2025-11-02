@@ -1,6 +1,6 @@
 // firebaseConfig.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // Use modular imports for auth
+import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "firebase/auth"; // Use modular imports for auth
 import { getFirestore } from "firebase/firestore";
 
 
@@ -17,5 +17,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);  // Use the modular approach for authentication
 const googleAuthProvider = new GoogleAuthProvider();  // Use the modular approach for GoogleAuthProvider
-
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Persistence set to local.");
+  })
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
 export { db, auth, googleAuthProvider };

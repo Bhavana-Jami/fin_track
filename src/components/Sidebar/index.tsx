@@ -26,31 +26,32 @@ const navItems = [
     label: 'Networth',
     icon: <TrendingUp className="h-5 w-5 mr-3" />,
   },
-  {
-    to: '/expenses',
-    label: 'Expenses',
-    icon: <Receipt className="h-5 w-5 mr-3" />,
-  },
-  {
-    to: '/budget',
-    label: 'Budget',
-    icon: <PiggyBank className="h-5 w-5 mr-3" />,
-  },
+  // {
+  //   to: '/expenses',
+  //   label: 'Expenses',
+  //   icon: <Receipt className="h-5 w-5 mr-3" />,
+  // },
+  // {
+  //   to: '/budget',
+  //   label: 'Budget',
+  //   icon: <PiggyBank className="h-5 w-5 mr-3" />,
+  // },
   {
     to: '/profile',
     label: 'Profile',
     icon: <User className="h-5 w-5 mr-3" />,
-  },
-  {
-    to: '/investments',
-    label: 'Investments',
-    icon: <LineChart className="h-5 w-5 mr-3" />,
-  },
-  {
-    to: '/settings',
-    label: 'Settings',
-    icon: <Settings className="h-5 w-5 mr-3" />,
-  },
+  }
+  // ,
+  // {
+  //   to: '/investments',
+  //   label: 'Investments',
+  //   icon: <LineChart className="h-5 w-5 mr-3" />,
+  // },
+  // {
+  //   to: '/settings',
+  //   label: 'Settings',
+  //   icon: <Settings className="h-5 w-5 mr-3" />,
+  // },
 ];
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
@@ -157,6 +158,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       pathname.includes('profile') &&
                       'bg-graydark dark:bg-meta-4'
                     }`}
+                    
                   >
                     {icon}
                     {label}

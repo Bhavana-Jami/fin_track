@@ -1,11 +1,19 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useEffect } from 'react';
 import Header from '../components/Header/index';
 import Sidebar from '../components/Sidebar/index';
 import { Provider } from 'react-redux';
-import store from "../redux/store";
+import store from '../redux/store';
+import { useDispatch } from 'react-redux';
+import {useYahooFinanceApi} from "../hooks/useYahooFinanceApi.js"
+import {listenForAuthChanges} from "../pages/Authentication/redux/googleAuthActions.js"
 const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+ const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(listenForAuthChanges());
+  }, [dispatch]);
+  const {stockData} = useYahooFinanceApi()
   return (
     <Provider store={store}>
       <div className="dark:bg-boxdark-2 dark:text-bodydark">

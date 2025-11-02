@@ -17,12 +17,15 @@ import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
 import Networth from './pages/Networth/Networth';
-import Expenses from './pages/Expenses';
+import Expenses from './pages/Expenses/Expenses.js';
 import Budget from './pages/Budget';
 import Investments from './pages/Investments';
 import "./App.css"
-
+import { Provider } from 'react-redux';
+import store from "../src/redux/store.js";
 function App() {
+ 
+
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
 
@@ -37,6 +40,7 @@ function App() {
   return loading ? (
     <Loader />
   ) : (
+    <Provider store={store}>
     <DefaultLayout>
       <Routes>
         <Route
@@ -123,6 +127,7 @@ function App() {
         />
       </Routes>
     </DefaultLayout>
+    </Provider>
   );
 }
 

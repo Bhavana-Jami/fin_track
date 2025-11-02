@@ -32,18 +32,21 @@ import { useSelector } from 'react-redux';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebaseconfig.js';
 // import { updateFirestoreData } from '../../hooks/useFirebaseFirestore/updateFirestoreData';
+// import {compactNumberFormatConverter} from "../../utils/compactNumberFormatConverter/compactNumberFormatConverter.js"
 export default function NetworthPage() {
   const currentUser = useSelector((state) => state.authReducer.currentUser);
-  const { networth, addItemToFirestore, loading, error } =
-    useFirebaseFirestore();
+  const { item, addItemToFirestore, error } = useFirebaseFirestore('networth');
   const [newItem, setNewItem] = useState({
     id: Date.now(),
     name: '',
     value: '',
     type: 'asset',
-    month: new Date().getMonth()+1,
+    month: new Date().getMonth() + 1,
   });
   const handleAddItem = () => {
+    if (!currentUser) {
+      alert('Please Signin to Add Item');
+    }
     if (!newItem.name.trim()) return;
 
     addItemToFirestore('networth', newItem);
@@ -55,37 +58,57 @@ export default function NetworthPage() {
       month: new Date().getMonth(),
     });
   };
-
-  if (loading) return <p>Loading networth data...</p>;
+  console.log(item);
+  function compactNumberFormatConverter(num: number) {
+    if (num >= 1e9) {
+      return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B'; // Billion
+    } else if (num >= 1e6) {
+      return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; // Million
+    } else if (num >= 1e3) {
+      return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; // Thousand
+    } else {
+      return num.toString(); // Less than 1K, return as is
+    }
+  }
+  // if (loading) return <p>Loading networth data...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const assets = networth.filter((item) => item.type === 'asset');
-  const liabilities = networth.filter((item) => item.type === 'liability');
+  const assets = item.filter((item) => item.type === 'asset');
+  const liabilities = item.filter((item) => item.type === 'liability');
 
-  const totalAssets = assets.reduce((sum, asset) => sum + asset.value, 0);
+  const totalAssets = assets.reduce(
+    (sum, asset) => parseInt(sum) + parseInt(asset.value),
+    0,
+  );
   const totalLiabilities = liabilities.reduce(
-    (sum, liability) => sum + liability.value,
+    (sum, liability) => parseInt(sum) + parseInt(liability.value),
     0,
   );
   const netWorth = totalAssets - totalLiabilities;
- // Function to calculate net worth for each month
-const calculateNetWorthForMonth = (month: number, networth: NetWorthItem[]): number => {
-  const netMonth= networth.filter((item) => item.month === month);
-  const netMonthAss = netMonth.filter((item) => item.type === 'asset').reduce((sum, item) => sum + item.value, 0);
-  const netMonthLia = netMonth.filter((item) => item.type === 'liability').reduce((sum, item) => sum + item.value, 0);
-  return netMonthAss - netMonthLia;
-}
+  // Function to calculate net worth for each month
+  const calculateNetWorthForMonth = (
+    month: number,
+    networth: NetWorthItem[],
+  ): number => {
+    const netMonth = item.filter((item) => item.month === month);
+    const netMonthAss = netMonth
+      .filter((item) => item.type === 'asset')
+      .reduce((sum, item) => (sum) + (item.value), 0);
+    const netMonthLia = netMonth
+      .filter((item) => item.type === 'liability')
+      .reduce((sum, item) => sum+(item.value), 0);
+    return netMonthAss - netMonthLia;
+  };
 
-// Mock data for net worth growth for each month
-const netWorthData: NetWorthData[] = [
-  { date: '2025-01', netWorth: calculateNetWorthForMonth(1, networth) },
-  { date: '2025-02', netWorth: calculateNetWorthForMonth(2, networth) },
-  { date: '2025-03', netWorth: calculateNetWorthForMonth(3, networth) },
-  { date: '2025-04', netWorth: calculateNetWorthForMonth(4, networth) },
-  { date: '2025-05', netWorth: calculateNetWorthForMonth(5, networth) },
-  { date: '2025-06', netWorth: calculateNetWorthForMonth(6, networth) },
-];
-
+  // Mock data for net worth growth for each month
+  const netWorthData: NetWorthData[] = [
+    { date: '2025-01', netWorth: calculateNetWorthForMonth(1, item) },
+    { date: '2025-02', netWorth: calculateNetWorthForMonth(2, item) },
+    { date: '2025-03', netWorth: calculateNetWorthForMonth(3, item) },
+    { date: '2025-04', netWorth: calculateNetWorthForMonth(4, item) },
+    { date: '2025-05', netWorth: calculateNetWorthForMonth(5, item) },
+    { date: '2025-06', netWorth: calculateNetWorthForMonth(6, item) },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,7 +137,7 @@ const netWorthData: NetWorthData[] = [
             <div className="bg-white p-6 shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Net Worth</h3>
               <p className="text-title-md font-bold text-black dark:text-white mt-2">
-                ₹{netWorth.toLocaleString()}
+                ₹{compactNumberFormatConverter(netWorth)}
               </p>
             </div>
           </div>

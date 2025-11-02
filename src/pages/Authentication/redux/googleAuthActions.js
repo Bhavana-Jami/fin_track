@@ -1,12 +1,12 @@
-import { 
-  GOOGLE_SIGNIN_START, 
-  GOOGLE_SIGNIN_SUCCESS, 
-  GOOGLE_SIGNIN_FAILURE, 
-  GOOGLE_SIGN_OUT 
+import {
+  GOOGLE_SIGNIN_START,
+  GOOGLE_SIGNIN_SUCCESS,
+  GOOGLE_SIGNIN_FAILURE,
+  GOOGLE_SIGN_OUT
 } from "./googleAuthActionTypes";
 
 import { auth, googleAuthProvider, db } from "../../../../firebaseconfig";
-import { signInWithPopup, signOut, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { signInWithPopup, signOut,  onAuthStateChanged} from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
 export const googleSignInStart = () => ({
@@ -31,31 +31,19 @@ export const initiateGoogleSignIn = () => {
   return async (dispatch) => {
     try {
       dispatch(googleSignInStart());
-
-      // Set authentication persistence
-      await setPersistence(auth, browserLocalPersistence);
-
       const result = await signInWithPopup(auth, googleAuthProvider);
-      const user = result.user;  
-
-      if (!user) throw new Error("Google Sign-In failed");
-
+      const user = result.user;
       const userData = {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName || "Anonymous",
         photoURL: user.photoURL || "",
-       
-      };
 
+      };
       const docRef = doc(db, "users", user.uid);
       await setDoc(docRef, userData, { merge: true });
-
       dispatch(googleSignInSuccess(user));
-
-      console.log("✅ Google Sign-In Successful:", user);
     } catch (e) {
-      console.error("❌ Google Sign-In Error:", e);
       dispatch(googleSignInFailure(e.message));
     }
   };
@@ -64,12 +52,21 @@ export const initiateGoogleSignIn = () => {
 export const initiateSignOut = () => {
   return async (dispatch) => {
     try {
-      console.log("🔄 Signing out...");
       await signOut(auth);
       dispatch(googleSignOut());
-      console.log("✅ User signed out");
     } catch (e) {
-      console.error("❌ Sign-Out Error:", e);
+      console.error("Sign-Out Error:", e);
     }
+  };
+};
+export const listenForAuthChanges = () => {
+  return (dispatch) => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch(googleSignInSuccess(user));
+      } else {
+        dispatch(googleSignOut());
+      }
+    });
   };
 };
